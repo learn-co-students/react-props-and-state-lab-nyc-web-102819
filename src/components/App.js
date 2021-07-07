@@ -8,12 +8,77 @@ class App extends React.Component {
     super()
 
     this.state = {
+      allPets: [],
       pets: [],
       filters: {
         type: 'all'
       }
     }
   }
+
+  componentDidMount()  {
+    fetch('/api/pets')
+    .then(resp => resp.json())
+    .then(data => {
+      console.dir("fetch done",data)
+      this.setState({
+        allPets: data,
+        pets: data
+      })
+    })
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    console.log("update")
+    // console.log("prevState",prevState)
+    // console.log("state",this.state)
+    console.log("prevState filter",prevState.filters.type)
+    console.log("state filter",this.state.filters.type)
+
+  }
+
+  onChangeType = (breed) => {
+    this.setState({
+      filters: {type:breed}
+    })
+  }
+  
+  onFindPetsClick = () => {
+    if (this.state.filters.type === "all") {
+      // *** without API call 
+      // this.setState({
+      //     pets: this.state.allPets
+      //   })
+        
+        // *** with API call ***
+      fetch( `/api/pets`)
+      .then(resp => resp.json())
+      .then( data => {
+        this.setState({
+          pets: data
+        })
+      })
+
+    }else{
+        //*** without API call ***
+        // let filteredPets = this.state.allPets.filter(pet => {
+        //   return pet.type === this.state.filters.type
+        // })
+        
+      //   this.setState({
+      //     pets: filteredPets
+      // })
+
+      // *** with API call ***
+      fetch( `/api/pets?type=${this.state.filters.type}`)
+      .then(resp => resp.json())
+      .then( data => {
+        this.setState({
+          pets: data
+        })
+      })
+    }
+  } 
 
   render() {
     return (
@@ -24,10 +89,10 @@ class App extends React.Component {
         <div className="ui container">
           <div className="ui grid">
             <div className="four wide column">
-              <Filters />
+              <Filters changeFilter = {this.onChangeType} executeFilter = {this.onFindPetsClick}/>
             </div>
             <div className="twelve wide column">
-              <PetBrowser />
+              <PetBrowser pets = {this.state.pets} filter={this.state.filters.type} />
             </div>
           </div>
         </div>
@@ -37,3 +102,4 @@ class App extends React.Component {
 }
 
 export default App
+ 
